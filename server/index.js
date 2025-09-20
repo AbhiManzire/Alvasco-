@@ -19,6 +19,18 @@ app.use('/api/clients', require('./routes/clients'));
 app.use('/api/proposals', require('./routes/proposals'));
 app.use('/api/pricing', require('./routes/pricing'));
 
+// Seed database endpoint
+app.post('/api/seed', async (req, res) => {
+  try {
+    const { seedData } = require('./seedData');
+    await seedData();
+    res.json({ message: 'Database seeded successfully!' });
+  } catch (error) {
+    console.error('Seeding error:', error);
+    res.status(500).json({ error: 'Failed to seed database' });
+  }
+});
+
 // Serve static files from React app in production
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, '../client/build')));

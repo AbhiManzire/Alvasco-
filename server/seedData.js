@@ -8,6 +8,112 @@ const Product = require('./models/Product');
 const Client = require('./models/Client');
 const Proposal = require('./models/Proposal');
 
+// Seed database function
+async function seedData() {
+  try {
+    // Clear existing data
+    await User.deleteMany({});
+    await Product.deleteMany({});
+    await Client.deleteMany({});
+    await Proposal.deleteMany({});
+    console.log('Cleared existing data');
+
+    // Create sample users
+    const users = [];
+    const userData = [
+      { email: 'admin@alvasco.com', password: 'admin123', role: 'admin', name: 'Admin User' },
+      { email: 'sales@alvasco.com', password: 'sales123', role: 'sales', name: 'Sales User' },
+      { email: 'supplier@alvasco.com', password: 'supplier123', role: 'supplier', name: 'Supplier User' },
+      { email: 'client@btmi.com', password: 'client123', role: 'client', name: 'Client User' }
+    ];
+
+    for (const userInfo of userData) {
+      const hashedPassword = await bcrypt.hash(userInfo.password, 10);
+      const user = new User({
+        name: userInfo.name,
+        email: userInfo.email,
+        password: hashedPassword,
+        role: userInfo.role
+      });
+      await user.save();
+      users.push(user);
+      console.log(`Created user: ${userInfo.email}`);
+    }
+
+    // Create sample products
+    const products = [];
+    for (const productData of sampleProducts) {
+      const product = new Product(productData);
+      await product.save();
+      products.push(product);
+      console.log(`Created product: ${product.name}`);
+    }
+
+    // Create sample clients
+    const clients = [];
+    const clientData = [
+      {
+        name: 'John Smith',
+        company: 'BTMI Conference',
+        email: 'john.smith@btmi.com',
+        phone: '+1-246-555-0123',
+        businessType: 'government'
+      },
+      {
+        name: 'Sarah Johnson',
+        company: 'Caribbean Tourism Board',
+        email: 'sarah.johnson@ctb.com',
+        phone: '+1-246-555-0456',
+        businessType: 'government'
+      },
+      {
+        name: 'Michael Brown',
+        company: 'Island Promotions Ltd',
+        email: 'michael.brown@islandpromo.com',
+        phone: '+1-246-555-0789',
+        businessType: 'retail'
+      }
+    ];
+
+    for (const clientInfo of clientData) {
+      const client = new Client(clientInfo);
+      await client.save();
+      clients.push(client);
+      console.log(`Created client: ${client.name}`);
+    }
+
+    // Create sample proposal
+    const proposal = new Proposal({
+      proposalNumber: 'PROP-20240920-001',
+      client: clients[0]._id,
+      createdBy: users.find(u => u.role === 'sales')._id,
+      title: 'BTMI Conference Promotional Items',
+      description: 'Promotional items for BTMI Conference 2024',
+      items: [
+        {
+          product: products[0]._id,
+          quantity: 300,
+          shippingMethod: 'DHL',
+        }
+      ]
+    });
+    await proposal.save();
+    console.log('Created proposal: PROP-20240920-001');
+
+    console.log('Database seeded successfully!');
+    console.log('\nSample login credentials:');
+    console.log('Admin: admin@alvasco.com / admin123');
+    console.log('Sales: sales@alvasco.com / sales123');
+    console.log('Supplier: supplier@alvasco.com / supplier123');
+    console.log('Client: client@btmi.com / client123');
+
+    return { users, products, clients, proposal };
+  } catch (error) {
+    console.error('Seeding error:', error);
+    throw error;
+  }
+}
+
 // Sample data based on the product catalogs provided
 const sampleProducts = [
   {
@@ -350,6 +456,9 @@ async function seedDatabase() {
     console.log('Disconnected from MongoDB');
   }
 }
+
+// Export the seedData function
+module.exports = { seedData };
 
 // Run the seeder
 seedDatabase();
