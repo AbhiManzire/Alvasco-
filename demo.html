@@ -43,6 +43,7 @@
             </div>
             <button class="btn" onclick="login()">Login</button>
             <button class="btn" onclick="logout()">Logout</button>
+            <button class="btn" onclick="seedDatabase()" style="background-color: #28a745; margin-left: 10px;">Seed Database</button>
             <div id="userInfo" class="hidden">
                 <p><strong>Logged in as:</strong> <span id="userName"></span> (<span id="userRole"></span>)</p>
             </div>
@@ -148,6 +149,24 @@
             currentUser = null;
             localStorage.removeItem('authToken');
             document.getElementById('userInfo').classList.add('hidden');
+        }
+
+        async function seedDatabase() {
+            try {
+                const response = await fetch(`${API_BASE}/seed`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                const data = await response.json();
+                if (response.ok) {
+                    document.getElementById('authResult').innerHTML = '<div class="result success">Database seeded successfully! You can now login.</div>';
+                } else {
+                    document.getElementById('authResult').innerHTML = `<div class="result error">Seeding failed: ${data.error}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('authResult').innerHTML = `<div class="result error">Error seeding database: ${error.message}</div>`;
+            }
         }
 
         function showUserInfo() {
